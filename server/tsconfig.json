@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"lib": [ "ESNext" ],
+
+		"composite": true,
+
+		"sourceMap": true,
+		"declarationMap": true,
+
+		"importsNotUsedAsValues": "remove",
+
+		"useDefineForClassFields": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"noEmit": false,
+
+		"strict": false,
+		"skipLibCheck": true,
+
+		"outDir": "dist",
+	},
+	"exclude": [ "dist", "node_modules" ],
+	"include": [ "src/**/*" ],
+	"ts-node": {
+		"esm": true,
+		"transpileOnly": true,
+		"files": true,
+		"experimentalResolver": true
+	}
+}
