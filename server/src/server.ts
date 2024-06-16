@@ -17,9 +17,7 @@ const io = new Server(server, {
 	},
 });
 
-io.on(
-	"connection",
-	(socket: Socket) => {
+io.on("connection", (socket: Socket) => {
 		socket.on("clientMsg", (data) => {
 			console.log(data);
 			if (data.room === "") {
