@@ -1,5 +1,6 @@
-import { VoidComponent, For, Show, createSignal, onCleanup, onMount } from 'solid-js';
+import { VoidComponent, For, Show, createSignal, onCleanup, onMount, Index } from 'solid-js';
 import data from "../padaria";
+import { Portal } from "solid-js/web";
 
 export interface Props
 {
@@ -27,7 +28,8 @@ const Edit: VoidComponent<Props> = (props) =>
 	onMount(() => window.addEventListener('onhashchange', onBackButton))
 	onCleanup(() => window.removeEventListener('onhashchange', onBackButton))
 
-	function sumbitEdit(){
+	function sumbitEdit()
+	{
 		props.onSubmit(props.id, getTitle(), getOther(), getItems());
 	}
 
@@ -46,7 +48,6 @@ const Edit: VoidComponent<Props> = (props) =>
 				break;
 			case 1:
 				setShowFood(true);
-				// setItems(items => [...items, <button>{/*@once*/ options[index]}</button>]);
 				break;
 			case 2:
 				setShowSandwich(true);
@@ -67,37 +68,39 @@ const Edit: VoidComponent<Props> = (props) =>
 
 	return (
 		<>
-			<Show when={getModal()}>
-				<div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-0" onClick={exitModal} />
-			</Show>
-			<Show when={getShowAdd()}>
-				<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-300 z-10 overflow-y-auto">
-					<For each={options}>{(item, i) =>
-						<button onClick={() => onOptionSelect(i())} class="border border-black border-solid p-3">{item}</button>
-					}</For>
-				</div>
-			</Show>
-			<Show when={getShowDrink()}>
-				<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-400 z-10 overflow-y-auto">
-					<For each={Object.keys(data.drinks)}>{(item, _i) =>
-						<button class="border border-black border-solid p-3" onClick={() => setItems(x => [...x, item])}>{item}</button>
-					}</For>
-				</div>
-			</Show>
-			<Show when={getShowFood()}>
-				<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-500 z-10 overflow-y-auto">
-					<For each={Object.keys(data.foods)}>{(item, _i) =>
-						<button class="border border-black border-solid p-3" onClick={() => setItems(x => [...x, item])}>{item}</button>
-					}</For>
-				</div>
-			</Show>
+			<Portal>
+				<Show when={getModal()}>
+					<div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-0" onClick={exitModal} />
+				</Show>
+				<Show when={getShowAdd()}>
+					<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-300 z-10 overflow-y-auto">
+						<Index each={options}>{(item, i) =>
+							<button onClick={() => onOptionSelect(i)} class="border border-black border-solid p-3">{item()}</button>
+						}</Index>
+					</div>
+				</Show>
+				<Show when={getShowDrink()}>
+					<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-400 z-10 overflow-y-auto">
+						<For each={Object.keys(data.drinks)}>{(item, _i) =>
+							<button class="border border-black border-solid p-3" onClick={() => setItems(x => [...x, item])}>{item}</button>
+						}</For>
+					</div>
+				</Show>
+				<Show when={getShowFood()}>
+					<div class="fixed top-1/2 bottom-0 left-0 right-0 flex flex-col gap-2 p-6 bg-slate-500 z-10 overflow-y-auto">
+						<For each={Object.keys(data.foods)}>{(item, _i) =>
+							<button class="border border-black border-solid p-3" onClick={() => setItems(x => [...x, item])}>{item}</button>
+						}</For>
+					</div>
+				</Show>
+			</Portal>
 			<Show when={getShowSandwich()}>
 				<div class="fixed top-1/4 bottom-1/2 left-0 right-0 p-6 flex flex-row flex-wrap gap-2 bg-green-500 z-10 overflow-y-auto pt-12">
 					<button class="absolute top-0 left-0 right-3/4 py-2 border border-solid border-red-500 text-red-500" onClick={() => setSandwichBuilder([])}>Clear</button>
-					<button class="absolute top-0 left-3/4 right-0 py-2 border border-solid border-blue-500 text-blue-500" onClick={() => { setItems(x => [...x, getSandwichBuilder().join(" ")]); setSandwichBuilder([])}}>Save</button>
-					<For each={getSandwichBuilder()}>{(item, i) =>
-						<button class="border border-black border-solid p-2 max-h-12" onClick={() => setSandwichBuilder(x => x.filter((_item, index) => i() !== index))}>{item}</button>
-					}</For>
+					<button class="absolute top-0 left-3/4 right-0 py-2 border border-solid border-blue-500 text-blue-500" onClick={() => { setItems(x => [...x, getSandwichBuilder().join(" ")]); setSandwichBuilder([]) }}>Save</button>
+					<Index each={getSandwichBuilder()}>{(item, i) =>
+						<button class="border border-black border-solid p-2 max-h-12" onClick={() => setSandwichBuilder(x => x.filter((_item, index) => i !== index))}>{item()}</button>
+					}</Index>
 				</div>
 				<div class="fixed top-1/2 bottom-0 left-0 right-0 p-6 flex flex-row flex-wrap justify-center gap-2 bg-slate-500 z-10 overflow-y-auto">
 					<For each={Object.keys(data.sandwichs.items)}>{(item, _i) =>

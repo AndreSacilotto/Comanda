@@ -26,10 +26,10 @@ const Login: VoidComponent<Props> = (props) =>
 	}
 
 	return (
-		<div class="flex flex-col items-center gap-4">
+		<div class="flex flex-col flex-wrap justify-center items-center gap-4 h-full">
 			<input type="text" style={{ "color": colors[color()], "border-color": colors[color()] }} placeholder="Name" minLength="2" class="text-xl w-10/12 px-2 border border-solid border-black" 
 			value={name()} onChange={(ev) => setName(ev.target.value)} />
-			<div class="flex gap-3">
+			<div class="flex flex-wrap gap-3">
 				<For each={colors}>{(item, i) =>
 					<button onClick={() => click(i())} style={{ background: item }} class="w-7 h-7 hover:p-3" classList={{"outline": color() === i()}} />
 				}</For>

@@ -1,5 +1,5 @@
 import type { VoidComponent } from 'solid-js';
-import Catalog from "./Catalog";
+import { Catalog } from "./Catalog";
 
 const App: VoidComponent = () =>
 {
