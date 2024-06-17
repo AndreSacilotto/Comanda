@@ -1,6 +1,6 @@
 {
   "name": "comanda-web_client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Comand Realtime App - Client Side",
   "type": "module",
   "scripts": {
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "socket.io-client": "^4.7.5",
-    "solid-js": "^1.8.11"
+    "solid-js": "^1.8.11",
+	"shared": "file:../shared"
   }
 }

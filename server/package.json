@@ -1,7 +1,6 @@
 {
 	"name": "comanda-server",
-	"author": "5Spectra",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Comand Realtime App - Server Side",
 	"type": "module",
 	"scripts": {
@@ -20,6 +19,7 @@
 	"dependencies": {
 		"cors": "^2.8.5",
 		"express": "^4.19.2",
-		"socket.io": "^4.7.5"
+		"socket.io": "^4.7.5",
+		"shared": "file:../shared"
 	}
 }

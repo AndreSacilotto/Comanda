@@ -1,11 +1,14 @@
-import { VoidComponent, For, Show, createSignal, onCleanup, onMount, Index } from 'solid-js';
-import data from "../padaria";
+import { VoidComponent, For, Show, createSignal, onCleanup, onMount, Index, createEffect } from 'solid-js';
 import { Portal } from "solid-js/web";
+import { Comanda } from "shared/comanda";
+import data from "../components/padaria";
 
 export interface Props
 {
-	id: number,
-	onSubmit: (id: number, title: string, other: string, items: string[]) => void,
+	comanda: Comanda,
+	onRefresh: () => void,
+	onExit: () => void,
+	onSubmit: (title: string, notes: string, items: string[]) => void,
 }
 
 const Edit: VoidComponent<Props> = (props) =>
@@ -22,16 +25,15 @@ const Edit: VoidComponent<Props> = (props) =>
 	const [getSandwichBuilder, setSandwichBuilder] = createSignal<string[]>([]);
 
 	const [getTitle, setTitle] = createSignal<string>("");
-	const [getOther, setOther] = createSignal<string>("");
+	const [getNotes, setNotes] = createSignal<string>("");
 	const [getItems, setItems] = createSignal<string[]>([]);
 
 	onMount(() => window.addEventListener('onhashchange', onBackButton))
 	onCleanup(() => window.removeEventListener('onhashchange', onBackButton))
 
-	function sumbitEdit()
-	{
-		props.onSubmit(props.id, getTitle(), getOther(), getItems());
-	}
+	createEffect(() => setTitle(props.comanda.title))
+	createEffect(() => setNotes(props.comanda.notes))
+	createEffect(() => setItems(props.comanda.items))
 
 	function onBackButton()
 	{
@@ -110,17 +112,19 @@ const Edit: VoidComponent<Props> = (props) =>
 			</Show>
 			<div class="pt-6 px-4">
 				<div class="flex items-center">
-					<div class="p-2 m-1 border border-black border-solid rounded-full">{props.id || -1}</div>
+					<div class="p-2 m-1 border border-black border-solid rounded-full">{props.comanda.identifier || -1}</div>
 					<input type="text" placeholder="Client (opt)" value={getTitle()} onChange={(ev) => setTitle(ev.target.value)} class="block p-3 w-full border border-black border-solid" />
 				</div>
 
 				<div class="flex gap-6 text-center justify-center m-3">
-					<button class="p-3 border border-black border-solid bg-black text-white font-bold" onClick={() => { setShowAdd(true); setModal(true); }} >Add Item</button>
-					<button class="p-3 border border-black border-solid bg-black text-white font-bold" onClick={sumbitEdit} >Save</button>
+					<button class="flex-1 p-3 border border-black border-solid bg-black text-white font-bold" onClick={() => { setShowAdd(true); setModal(true); }} >Add Item</button>
+					<button class="p-3 border border-black border-solid bg-black text-white font-bold" onClick={() => props.onSubmit(getTitle(), getNotes(), getItems())}>Save</button>
+					<button class="p-3 border border-black border-solid bg-black text-white font-bold" onClick={() => props.onRefresh()}>Refresh</button>
+					<button class="p-3 border border-black border-solid bg-black text-white font-bold" onClick={() => props.onExit()}>Exit</button>
 				</div>
 				<hr class="m-3" />
 				<div class="flex flex-col gap-2">
-					<textarea placeholder="Outros" value={getOther()} onChange={(ev) => setOther(ev.target.value)} class="block p-3 w-full border border-black border-solid" />
+					<textarea placeholder="Notes" value={getNotes()} onChange={(ev) => setNotes(ev.target.value)} class="block px-3 py-2 w-full border border-black border-solid" />
 					<For each={getItems()}>{(item, i) =>
 						<div onClick={() => setItems(x => x.filter((_item, index) => i() !== index))} class="border border-black border-solid p-2">{item}</div>
 					}</For>

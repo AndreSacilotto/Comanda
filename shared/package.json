@@ -1,0 +1,10 @@
+{
+	"name": "shared",
+	"version": "1.0.0",
+	"description": "shared ts files",
+	"type": "module",
+	"private": "true",
+	"engines": {
+		"npm": ">=2.0.0"
+	}
+}
