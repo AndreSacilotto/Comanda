@@ -1,11 +1,12 @@
-import { defineConfig } from 'vite';
+import { CommonServerOptions, defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 // import devtools from 'solid-devtools/vite';
 
-const serveConfig = {
+const serveConfig: CommonServerOptions = {
 	strictPort: true,
 	port: 4567,
 	open: true,
+	host: true,
 }
 
 export default defineConfig({

@@ -1,46 +1,63 @@
 import { Socket, io } from "socket.io-client";
-import { ParentComponent, VoidComponent, For, createSignal, Switch, Match } from 'solid-js';
+import { VoidComponent, createSignal, For, Switch, Match } from 'solid-js';
 import { Comanda } from "shared/comanda";
 import { ServerToClientEvents, ClientToServerEvents } from "shared/commands";
 import { HourMinutes } from "../util/util_date";
 import Login from "./Login";
 import Edit from "./Edit";
 
-const stateEnum = {
+const stateEnum = Object.freeze({
 	Waiting: 0,
 	Login: 1,
 	Catalog: 2,
-	EditMode: 3, 
-}
+	EditMode: 3,
+});
 
 export const Catalog: VoidComponent = () =>
 {
-	const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("http://localhost:3333");
+	const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("http://192.168.0.105:3333");
 
 	const [getChar, setChar] = createSignal({ name: "Guest", color: "black" });
 	const [getState, setState] = createSignal<number>(stateEnum.Waiting); // 1 = login | 2 = catalog | 3 = edit
-	
+
 	const [getComandas, setComandas] = createSignal<Comanda[]>([]);
 	const [getEditId, setEditId] = createSignal<number>(-1);
 
-	socket.on("connect", () => {
+	socket.on("connect", () =>
+	{
+		setState(stateEnum.Login);
+	});
+	socket.on("disconnect", () =>
+	{
 		setState(stateEnum.Login);
 	});
 
-	socket.on("comandas_state", (comandas) => {
+	socket.on("comandas_state", (comandas) =>
+	{
 		console.log(comandas);
 		setComandas(comandas);
 	});
 
-	socket.on("new_comanda", (comanda) => {
+	socket.on("new_comanda", (comanda) =>
+	{
 		setComandas(items => [...items, comanda]);
 	});
 
-	socket.on("delete_comanda", (comandaId) => {
+	socket.on("can_edit", (identifier) =>
+	{
+		EnterEditMode(identifier)
+	});
+
+	// eslint-disable-next-line solid/reactivity -- get() brings reactivity, but that dont matter we just want the current value
+	socket.on("delete_comanda", (comandaId) =>
+	{
+		if (getState() === stateEnum.EditMode && getEditId() === comandaId)
+			ExitEditMode();
 		setComandas(items => items.filter(x => x.identifier !== comandaId));
 	});
 
-	socket.on("update_comanda", (comanda) => {
+	socket.on("update_comanda", (comanda) =>
+	{
 		setComandas(items => items.map(item => item.identifier === comanda.identifier ? comanda : item));
 	});
 
@@ -67,13 +84,13 @@ export const Catalog: VoidComponent = () =>
 	{
 		setChar({ name, color });
 		setState(stateEnum.Catalog);
-		
+
 		socket.emit("comandas_state");
 	}
 
-	function EnterEditMode(item: Comanda)
+	function EnterEditMode(identifier: number)
 	{
-		setEditId(item.identifier);
+		setEditId(identifier);
 		setState(stateEnum.EditMode);
 	}
 	function ExitEditMode()
@@ -87,7 +104,7 @@ export const Catalog: VoidComponent = () =>
 	}
 
 	return (
-		<Switch fallback={<p>Waiting...</p>}>
+		<Switch fallback={<h1 class="text-center text-2xl">Waiting...</h1>}>
 			<Match when={getState() === stateEnum.Login}>
 				<Login onSubmit={onLogin} />
 			</Match>
@@ -96,7 +113,12 @@ export const Catalog: VoidComponent = () =>
 					<div style={{ "color": getChar().color }} class="text-center">{getChar().name}</div>
 					<div class="flex flex-col gap-4 mx-2">
 						<For each={getComandas()}>{(item, _i) =>
-							<CatalogItem creator={item.creator || ""} time={item.time} onDelete={() => Remove(item.identifier)} onEdit={() => EnterEditMode(item)}>{item.title}</CatalogItem>
+							<div class="flex h-12 gap-1 items-stretch border border-black border-solid rounded-l-full hover:border-teal-300 select-none">
+								<div class="flex-1 self-center pl-3">{item.title}</div>
+								<div class="self-center pl-3">{item.creator || "?"} {HourMinutes(new Date(item.time), ":")}</div>
+								<button class="bg-gray-500 text-white p-2 min-w-10" onClick={() => EnterEditMode(item.identifier)}>EDIT</button>
+								<button class="bg-red-500 text-white p-2 min-w-10" onClick={() => Remove(item.identifier)}>DELETE</button>
+							</div>
 						}</For>
 						<div class="flex w-full justify-center select-none" >
 							<button class="border border-black border-dotted w-1/2 rounded bg-white" onClick={Add}>
@@ -107,38 +129,8 @@ export const Catalog: VoidComponent = () =>
 				</div>
 			</Match>
 			<Match when={getState() === stateEnum.EditMode}>
-				<Edit comanda={getComandas()[getEditId()]} onSubmit={onSubmitEdit} onRefresh={RefreshEditMode} onExit={ExitEditMode} />
+				<Edit comanda={getComandas().find(x => x.identifier === getEditId())!} onSubmit={onSubmitEdit} onRefresh={RefreshEditMode} onExit={ExitEditMode} />
 			</Match>
 		</Switch>
-	);
-};
-
-export type MouseHtmlEvent = MouseEvent & { currentTarget: HTMLButtonElement; target: Element; };
-
-export interface CatalogItemProps
-{
-	creator: string,
-	time: number,
-	onDelete?: (ev: MouseHtmlEvent) => void,
-	onEdit?: (ev: MouseHtmlEvent) => void,
-}
-
-export const CatalogItem: ParentComponent<CatalogItemProps> = (props) =>
-{
-	return (
-		<div class="flex h-12 gap-1 items-stretch border border-black border-solid rounded-l-full hover:border-teal-300 select-none">
-			<div class="flex-1 self-center pl-3">
-				{props.children}
-			</div>
-			<div class="self-center pl-3">
-				{props.creator} {HourMinutes(new Date(props.time), ":")}
-			</div>
-			<button class="bg-gray-500 text-white p-2 min-w-10" onClick={(ev) => props.onEdit?.(ev)}>
-				EDIT
-			</button>
-			<button class="bg-red-500 text-white p-2 min-w-10" onClick={(ev) => props.onDelete?.(ev)}>
-				DELETE
-			</button>
-		</div>
 	);
 };

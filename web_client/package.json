@@ -1,6 +1,6 @@
 {
   "name": "comanda-web_client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Comand Realtime App - Client Side",
   "type": "module",
   "scripts": {

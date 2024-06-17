@@ -4,6 +4,7 @@ import { createServer } from "http";
 import cors from "cors";
 import { BothEvents, ClientToServerEvents, ServerToClientEvents, SocketData } from "shared/commands";
 import Comanda from "shared/comanda";
+import { GetLocalInfo } from "./util_os";
 
 const app = express();
 app.use(cors());
@@ -11,19 +12,27 @@ const server = createServer(app);
 
 const port = process.env.PORT || 3333;
 
-let comandaCounter = 0;
-const comandas: Comanda[] = []
-
 const io = new Server<ClientToServerEvents, ServerToClientEvents, BothEvents, SocketData>(server, {
 	cors: {
-		origin: ["http://localhost:4567"],
+		origin: ["http://192.168.0.105:4567"],
 		methods: ["GET", "POST"],
 		credentials: true,
 	},
 });
 
+server.listen(port, () =>
+{
+	const info = GetLocalInfo();
+	console.log(`Server running ${info.address}:${port}`);
+});
+
+let comandaCounter = 0;
+const comandas: Comanda[] = []
+	
 io.on("connection", (socket) =>
 {
+	console.log(`new connection ${socket.id}`, " | ", socket.request.socket.remoteAddress );
+	
 	socket.on("comandas_state", () =>
 	{
 		socket.emit("comandas_state", comandas);
@@ -65,8 +74,4 @@ io.on("connection", (socket) =>
 	});
 });
 
-server.listen(port, () =>
-{
-	console.log(`Server running ${3000}`);
-});
-
+server

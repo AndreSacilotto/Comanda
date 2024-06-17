@@ -5,10 +5,10 @@ export interface Props
 	onSubmit: (name: string, color: string) => void,
 }
 
+const colors = Object.freeze(["black", "red", "green", "blue", "orange", "gold", "purple", "hotpink", "saddlebrown"])
+
 const Login: VoidComponent<Props> = (props) =>
 {
-	const colors = ["black", "red", "green", "blue", "orange", "gold", "purple", "hotpink", "saddlebrown"]
-
 	const [color, setColor] = createSignal<number>(0);
 	const [name, setName] = createSignal<string>("");
 
@@ -21,13 +21,13 @@ const Login: VoidComponent<Props> = (props) =>
 	function login()
 	{
 		const str = name();
-		if(str.length > 2)
+		// if(str.length > 2)
 			props.onSubmit(str, colors[color()]);
 	}
 
 	return (
 		<div class="flex flex-col flex-wrap justify-center items-center gap-4 h-full">
-			<input type="text" style={{ "color": colors[color()], "border-color": colors[color()] }} placeholder="Name" minLength="2" class="text-xl w-10/12 px-2 border border-solid border-black" 
+			<input type="text" style={{ "color": colors[color()], "border-color": colors[color()] }} placeholder="Name" class="text-xl w-10/12 px-2 border border-solid border-black" 
 			value={name()} onChange={(ev) => setName(ev.target.value)} />
 			<div class="flex flex-wrap gap-3">
 				<For each={colors}>{(item, i) =>
